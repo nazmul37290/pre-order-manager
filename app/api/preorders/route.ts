@@ -39,7 +39,7 @@ export async function GET(req:Request) {
         return apiResponse({
             message:"Pre orders get successfully",
             status:200,
-            data:{preOrders,total}
+            data:{preOrders,total,page,totalPages:total/limit}
         })
     }
     catch(err){
@@ -55,9 +55,7 @@ export async function GET(req:Request) {
     
 }
 export async function POST(req:Request) {
-    
-    
-    
+  
     try{
         const body= await req.json();
         const validatedData=preOrderSchema.parse(body);

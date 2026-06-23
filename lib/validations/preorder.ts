@@ -11,7 +11,7 @@ export const preOrderSchema = z.object({
     .int()
     .min(1, 'Value must be minimum 1'),
 
-  preOrderWhen: z.enum(PreOrderWhenEnum).default('out-of-stock'),
+  preOrderWhen: z.enum(PreOrderWhenEnum),
 
   startsAt: z.coerce.date({
     error: 'Starting date is required',
@@ -19,5 +19,5 @@ export const preOrderSchema = z.object({
 
   endsAt: z.coerce.date().optional(),
 
-  status: z.enum(PreOrderStatusEnum).default('active'),
+  status: z.enum(PreOrderStatusEnum),
 });
