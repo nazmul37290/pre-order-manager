@@ -1,65 +1,195 @@
-import Image from "next/image";
+'use client'
+import SortDropDown, { Query } from "@/components/sort-dropdown";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
+import { SkeletonTable } from "@/components/ui/skleton-table";
+import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { getPreOrders } from "@/lib/api/preorder";
+import { formatDateTime } from "@/lib/formatDate";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, Pen } from "lucide-react";
+import { ChangeEvent, useState } from "react";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { IoIosArrowRoundDown, IoIosArrowRoundUp } from "react-icons/io";
+import { TbArrowsSort } from "react-icons/tb";
+
+type PreOrder = {
+  id: number;
+  name: string;
+  products: number;
+  preOrderWhen: string;
+  startsAt: string;
+  endsAt: string | null;
+  status: string;
+};
+
+export type PreOrdersResponse = {
+  data: {
+    preOrders: PreOrder[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
 export default function Home() {
+  const [selectedIds,setSelectedIds]=useState<number[]>([])
+
+  const [query, setQuery] = useState<Query>({
+    status: 'all',
+    page: 1,
+    limit: 10,
+    sortBy: 'createdAt',
+    sortDirection: 'desc'
+  });
+
+  const { data, error, isLoading } = useQuery<PreOrdersResponse, Error>({
+    queryKey: ['preorders', { ...query }],
+    queryFn: () => getPreOrders(query)
+  })
+
+  console.log(error, 'errors');
+
+
+  const page = data?.data?.page ?? 1;
+  const limit = data?.data?.limit ?? 10;
+  const total = data?.data?.total ?? 0;
+
+  const start = (page - 1) * limit + 1;
+  const end = Math.min(page * limit, total);
+
+  console.log(selectedIds, 'preorders')
+
+
+
+  const nextPage = () => {
+    setQuery(prev => ({
+      ...prev,
+      page: prev.page + 1
+    }));
+  };
+
+  const prevPage = () => {
+    setQuery(prev => ({
+      ...prev,
+      page: Math.max(1, prev.page - 1)
+    }));
+  };
+
+  const handleMarkAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(data?.data?.preOrders.map(o => o.id) || []);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSingleMark =(checked:boolean,id:number)=>{
+    if(checked){
+        setSelectedIds(prev=>([...prev,id]))
+    }
+    else{
+      const newIds= selectedIds?.filter(item=>item !== id)
+      setSelectedIds(newIds)
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="flex flex-col px-4 flex-1 items-center pt-24 bg-zinc-50  dark:bg-black">
+      <section className="max-w-6xl mx-auto w-full">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-secondary">Preorders</h3>
+          <Button>Create Preorder</Button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        {
+          error &&
+          <p className="text-red-500">{error.message}</p>
+
+        }
+
+        <div className="bg-white mt-6 rounded-lg border">
+          <div className="p-2 flex items-center justify-between">
+            <div>
+              {
+                ['all', 'active', 'inactive'].map((btn, i) => {
+                  return <Button key={i} variant={"outline"} className={`${query?.status === btn ? "bg-zinc-200" : ""} capitalize border-0! font-semibold text-secondary`} onClick={() => setQuery(prev => ({
+                    ...prev, status: btn as "all" | "active" | "inactive", page: 1
+                  }))}>{btn}</Button>
+                })
+              }
+
+            </div>
+            <SortDropDown query={query} setQuery={setQuery}></SortDropDown>
+          </div>
+          <Table className="border rounded-md">
+            <TableHeader className=" bg-[#f5f5f5]">
+              <TableRow>
+                <TableHead className="">
+                  <Checkbox onCheckedChange={handleMarkAll} className="border border-zinc-600"></Checkbox>
+                </TableHead>
+                <TableHead className="w-[200px] font-semibold text-secondary">Name</TableHead>
+                <TableHead className="font-semibold text-secondary">Products</TableHead>
+                <TableHead className="font-semibold text-secondary">Preorder when</TableHead>
+                <TableHead className="font-semibold text-secondary">Starts at</TableHead>
+                <TableHead className="font-semibold text-secondary">Ends at</TableHead>
+                <TableHead className="font-semibold text-secondary">Status</TableHead>
+                <TableHead className="font-semibold text-secondary">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {
+                isLoading && <TableRow>
+                  <TableCell colSpan={8}>
+                    <SkeletonTable></SkeletonTable>
+                  </TableCell>
+                </TableRow>
+              }
+              {
+                data?.data?.preOrders.map((order) => {
+
+                  return <TableRow key={order?.id}>
+                    <TableCell className="font-medium"><Checkbox checked={selectedIds?.includes(order?.id)} onCheckedChange={(e)=>handleSingleMark(e,order.id)} className="border border-zinc-600"></Checkbox></TableCell>
+                    <TableCell className="font-semibold">{order?.name}</TableCell>
+                    <TableCell>1</TableCell>
+                    <TableCell className="">{order?.preOrderWhen}</TableCell>
+                    <TableCell className="">{formatDateTime(order?.startsAt)}</TableCell>
+                    <TableCell className="">{formatDateTime(order?.endsAt)}</TableCell>
+                    <TableCell className="">
+                      <Switch checked={order.status === 'active'} className="h-6! w-10! rounded-md p-1  [&>span]:h-2 [&>span]:w-2  [&>span]:rounded!  [&>span]:data-[state=checked]:translate-x-3.5"
+                      />
+                    </TableCell>
+                    <TableCell className="text-right flex items-center gap-2">
+                      <Button className="" variant={'outline'}><Pen /></Button>
+                      <Button className="" variant={'outline'}><FaRegTrashCan /></Button>
+                    </TableCell>
+                  </TableRow>
+                })
+              }
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={8}>
+                  <div className="flex justify-center gap-2 items-center w-full">
+                    <Button disabled={page === 1} className="disabled:cursor-not-allowed! cursor-pointer disabled:bg-zinc-200 disabled:text-black" onClick={prevPage}><ChevronLeft></ChevronLeft></Button>
+                    <p>Showing {total === 0 ? 0 : start} to {end} from {total}</p>
+                    <Button disabled={page === data?.data?.totalPages} className="disabled:cursor-not-allowed cursor-pointer disabled:bg-zinc-200 disabled:text-black" onClick={nextPage}><ChevronRight></ChevronRight></Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

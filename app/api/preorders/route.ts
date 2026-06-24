@@ -18,7 +18,6 @@ export async function GET(req:Request) {
 
     const safeSortBy= allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-
     const where:any={}
     if(status!=='all'){
         where.status=status
@@ -39,7 +38,7 @@ export async function GET(req:Request) {
         return apiResponse({
             message:"Pre orders get successfully",
             status:200,
-            data:{preOrders,total,page,totalPages:total/limit}
+            data:{preOrders,total,page,totalPages:(total/limit) <1 ? 1 : (total/limit) ,limit}
         })
     }
     catch(err){
