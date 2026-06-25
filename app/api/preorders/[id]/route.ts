@@ -28,7 +28,6 @@ export async function PUT(req: Request, { params }) {
         })
     }
     catch (err) {
-        console.log(err);
         return apiError({
             error: err
         })
@@ -74,7 +73,6 @@ export async function PATCH(req: Request, { params }) {
         })
     }
     catch (err) {
-        console.log(err);
         return apiError({
             error: err
         })

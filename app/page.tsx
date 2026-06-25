@@ -1,8 +1,8 @@
 'use client'
+import { DeleteAlert } from "@/components/delete-alert";
 import SortDropDown, { Query } from "@/components/sort-dropdown";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-
 import { SkeletonTable } from "@/components/ui/skleton-table";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -14,16 +14,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useDeletePreOrder } from "@/hooks/useDeletePreOrder";
+import { useUpdatePreOrderStatus } from "@/hooks/useUpdatePreOrderStatus";
 import { getPreOrders } from "@/lib/api/preorder";
 import { formatDateTime } from "@/lib/formatDate";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Pen } from "lucide-react";
-import { ChangeEvent, useState } from "react";
-import { FaRegTrashCan } from "react-icons/fa6";
-import { IoIosArrowRoundDown, IoIosArrowRoundUp } from "react-icons/io";
-import { TbArrowsSort } from "react-icons/tb";
+import Link from "next/link";
+import { useState } from "react";
 
-type PreOrder = {
+
+export type PreOrder = {
   id: number;
   name: string;
   products: number;
@@ -43,7 +44,7 @@ export type PreOrdersResponse = {
   };
 };
 export default function Home() {
-  const [selectedIds,setSelectedIds]=useState<number[]>([])
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
 
   const [query, setQuery] = useState<Query>({
     status: 'all',
@@ -53,12 +54,14 @@ export default function Home() {
     sortDirection: 'desc'
   });
 
-  const { data, error, isLoading } = useQuery<PreOrdersResponse, Error>({
+  const { data, error, isLoading, } = useQuery<PreOrdersResponse, Error>({
     queryKey: ['preorders', { ...query }],
     queryFn: () => getPreOrders(query)
   })
 
-  console.log(error, 'errors');
+  const deleteMutation= useDeletePreOrder()
+  const updateStatusMutation=useUpdatePreOrderStatus()
+
 
 
   const page = data?.data?.page ?? 1;
@@ -68,7 +71,6 @@ export default function Home() {
   const start = (page - 1) * limit + 1;
   const end = Math.min(page * limit, total);
 
-  console.log(selectedIds, 'preorders')
 
 
 
@@ -94,22 +96,34 @@ export default function Home() {
     }
   };
 
-  const handleSingleMark =(checked:boolean,id:number)=>{
-    if(checked){
-        setSelectedIds(prev=>([...prev,id]))
+  const handleSingleMark = (checked: boolean, id: number) => {
+    if (checked) {
+      setSelectedIds(prev => ([...prev, id]))
     }
-    else{
-      const newIds= selectedIds?.filter(item=>item !== id)
+    else {
+      const newIds = selectedIds?.filter(item => item !== id)
       setSelectedIds(newIds)
     }
   }
+
+  const handleStatusUpdate = async (checked: boolean, id: number) => {
+    const status = checked ? 'active' : 'inactive';
+updateStatusMutation.mutate({status,id})
+  };
+
+  const handlePreOrderDelete = async (id: number) => {
+   deleteMutation.mutate(id);
+  }
+
 
   return (
     <main className="flex flex-col px-4 flex-1 items-center pt-24 bg-zinc-50  dark:bg-black">
       <section className="max-w-6xl mx-auto w-full">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-secondary">Preorders</h3>
+          <Link prefetch href={'/preorder/create'}>
           <Button>Create Preorder</Button>
+          </Link>
         </div>
         {
           error &&
@@ -154,26 +168,34 @@ export default function Home() {
                   </TableCell>
                 </TableRow>
               }
-              {
+              {data?.data?.preOrders?.length > 0 && !isLoading ?
                 data?.data?.preOrders.map((order) => {
 
                   return <TableRow key={order?.id}>
-                    <TableCell className="font-medium"><Checkbox checked={selectedIds?.includes(order?.id)} onCheckedChange={(e)=>handleSingleMark(e,order.id)} className="border border-zinc-600"></Checkbox></TableCell>
+                    <TableCell className="font-medium"><Checkbox checked={selectedIds?.includes(order?.id)} onCheckedChange={(e) => handleSingleMark(e, order.id)} className="border border-zinc-600"></Checkbox></TableCell>
                     <TableCell className="font-semibold">{order?.name}</TableCell>
-                    <TableCell>1</TableCell>
+                    <TableCell>{order?.products}</TableCell>
                     <TableCell className="">{order?.preOrderWhen}</TableCell>
                     <TableCell className="">{formatDateTime(order?.startsAt)}</TableCell>
-                    <TableCell className="">{formatDateTime(order?.endsAt)}</TableCell>
+                    <TableCell className="">{order?.endsAt && formatDateTime(order?.endsAt)}</TableCell>
                     <TableCell className="">
-                      <Switch checked={order.status === 'active'} className="h-6! w-10! rounded-md p-1  [&>span]:h-2 [&>span]:w-2  [&>span]:rounded!  [&>span]:data-[state=checked]:translate-x-3.5"
+                      <Switch checked={order.status === 'active'} onCheckedChange={val => handleStatusUpdate(val, order?.id)} className="h-6! w-10! rounded-md p-1 cursor-pointer [&>span]:h-2 [&>span]:w-2  [&>span]:rounded!  [&>span]:data-[state=checked]:translate-x-3.5"
                       />
                     </TableCell>
                     <TableCell className="text-right flex items-center gap-2">
                       <Button className="" variant={'outline'}><Pen /></Button>
-                      <Button className="" variant={'outline'}><FaRegTrashCan /></Button>
+                      <DeleteAlert onConfirm={() => handlePreOrderDelete(order?.id)} ></DeleteAlert>
+
                     </TableCell>
                   </TableRow>
-                })
+                }) :
+                <TableRow>
+                  <TableCell colSpan={8}>
+                    <div className="flex justify-center gap-2 text-red-500 items-center w-full">
+                      No Pre orders found
+                    </div>
+                  </TableCell>
+                </TableRow>
               }
             </TableBody>
             <TableFooter>
@@ -182,7 +204,7 @@ export default function Home() {
                   <div className="flex justify-center gap-2 items-center w-full">
                     <Button disabled={page === 1} className="disabled:cursor-not-allowed! cursor-pointer disabled:bg-zinc-200 disabled:text-black" onClick={prevPage}><ChevronLeft></ChevronLeft></Button>
                     <p>Showing {total === 0 ? 0 : start} to {end} from {total}</p>
-                    <Button disabled={page === data?.data?.totalPages} className="disabled:cursor-not-allowed cursor-pointer disabled:bg-zinc-200 disabled:text-black" onClick={nextPage}><ChevronRight></ChevronRight></Button>
+                    <Button disabled={page >= data?.data?.totalPages} className="disabled:cursor-not-allowed cursor-pointer disabled:bg-zinc-200 disabled:text-black" onClick={nextPage}><ChevronRight></ChevronRight></Button>
                   </div>
                 </TableCell>
               </TableRow>
