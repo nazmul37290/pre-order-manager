@@ -28,10 +28,10 @@ export type PreOrder = {
   id: number;
   name: string;
   products: number;
-  preOrderWhen: string;
+  preOrderWhen: 'regardless-of-stock'| 'out-of-stock';
   startsAt: string;
   endsAt: string | null;
-  status: string;
+  status: "active"|'inactive';
 };
 
 export type PreOrdersResponse = {
@@ -168,11 +168,11 @@ updateStatusMutation.mutate({status,id})
                   </TableCell>
                 </TableRow>
               }
-              {data?.data?.preOrders?.length > 0 && !isLoading ?
+              {data?.data?.preOrders && data?.data?.preOrders?.length > 0 && !isLoading ?
                 data?.data?.preOrders.map((order) => {
 
                   return <TableRow key={order?.id}>
-                    <TableCell className="font-medium"><Checkbox checked={selectedIds?.includes(order?.id)} onCheckedChange={(e) => handleSingleMark(e, order.id)} className="border border-zinc-600"></Checkbox></TableCell>
+                    <TableCell className="font-medium"><Checkbox checked={selectedIds?.includes(order?.id)} onCheckedChange={(e:boolean) => handleSingleMark(e, order.id)} className="border border-zinc-600"></Checkbox></TableCell>
                     <TableCell className="font-semibold">{order?.name}</TableCell>
                     <TableCell>{order?.products}</TableCell>
                     <TableCell className="">{order?.preOrderWhen}</TableCell>
@@ -183,7 +183,9 @@ updateStatusMutation.mutate({status,id})
                       />
                     </TableCell>
                     <TableCell className="text-right flex items-center gap-2">
-                      <Button className="" variant={'outline'}><Pen /></Button>
+                      <Link prefetch href={`/preorder/edit/${order?.id}`}>
+                      <Button className="cursor-pointer" variant={'outline'}><Pen /></Button>
+                      </Link>
                       <DeleteAlert onConfirm={() => handlePreOrderDelete(order?.id)} ></DeleteAlert>
 
                     </TableCell>

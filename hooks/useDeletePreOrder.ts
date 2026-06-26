@@ -16,8 +16,8 @@ export const useDeletePreOrder=()=>{
                 toast.error(result.message)
             }
         },
-        onError:()=>{
-            toast.error('Something went wrong')
+        onError:(err)=>{
+            toast.error(err.message || 'Something went wrong')
         }
 
     })

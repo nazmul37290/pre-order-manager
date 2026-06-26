@@ -3,7 +3,30 @@ import { apiResponse } from "@/lib/apiResponse";
 import { prisma } from "@/lib/prisma";
 import { preOrderSchema } from "@/lib/validations/preorder";
 
-export async function PUT(req: Request, { params }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: number }> }) {
+
+    const { id } = await params
+    try {
+        const data = await prisma.preOrder.findFirst({
+            where: { id: Number(id) },
+        })
+
+        return apiResponse({
+            status: 201,
+            message: "Pre order get successfully",
+            data: data
+        })
+    }
+    catch (err) {
+        console.log(err);
+        return apiError({
+            error: err
+        })
+    }
+
+    
+}
+export async function PUT(req: Request, { params }: { params: Promise<{ id: number }> }) {
 
     const { id } = await params
 
@@ -35,7 +58,7 @@ export async function PUT(req: Request, { params }) {
 
     
 }
-export async function PATCH(req: Request, { params }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: number }> }) {
 
     const { id } = await params
 
@@ -83,7 +106,7 @@ export async function PATCH(req: Request, { params }) {
 
 export async function DELETE(
     req: Request,
-    { params}
+    { params }: { params: Promise<{ id: number } >}
 ) {
     const {id}= await params;
 

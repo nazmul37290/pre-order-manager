@@ -16,8 +16,8 @@ export const useUpdatePreOrderStatus=()=>{
                 toast.error(result.message)
             }
         },
-        onError:()=>{
-            toast.error("something went wrong");
+        onError:(err)=>{
+            toast.error(err.message || 'Something went wrong')
         }
     })
 

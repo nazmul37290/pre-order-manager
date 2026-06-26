@@ -1,4 +1,5 @@
-import { PreOrdersResponse } from "@/app/page";
+import { PreOrder, PreOrdersResponse } from "@/app/page";
+import { PreOrderBody } from "@/types";
 
 export async function getPreOrders(query:Record<string,unknown>):Promise<PreOrdersResponse>{
     const params = new URLSearchParams();
@@ -18,6 +19,17 @@ export async function getPreOrders(query:Record<string,unknown>):Promise<PreOrde
     }
 
     return res.json();
+}
+export async function getSingleOrder(id:number):Promise<{data:PreOrder}>{
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/preorders/${id}`, {
+        method: "GET",
+    });
+    const data= await res.json()
+    if (!res.ok) {
+        throw new Error(data.message ||"Failed to fetch preorders");
+    }
+
+    return data
 }
 
 export async function createPreOrder(preOrderData:{
@@ -45,6 +57,25 @@ export async function createPreOrder(preOrderData:{
     return  data
 }
 
+
+
+export async function updatePreOrder(preOrderData: PreOrderBody,id:number){
+    const res= await fetch(`/api/preorders/${id}`,{
+        method:"PATCH",
+        body:JSON.stringify(preOrderData)
+    })
+
+    const data= await res.json();
+
+console.log(data,'updated data');
+
+
+    if(!res.ok){
+        throw new Error (data?.message ||"Failed to update preorder")
+    }
+
+    return data
+}
 export async function changePreOrderStatus(statusValue:'active'|'inactive',id:number){
     const res= await fetch(`/api/preorders/${id}`,{
         method:"PATCH",

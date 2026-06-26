@@ -20,7 +20,6 @@ const CreatePreOrder = () => {
         createMutation.mutate(data)
     }
     return (
-        // TODO: submit function send from here
         <main className="flex flex-col px-4 flex-1 items-center pt-24 bg-zinc-50  dark:bg-black">
             <section className="max-w-6xl mx-auto w-full">
                 <div className="flex items-center justify-between">
