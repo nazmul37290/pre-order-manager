@@ -6,9 +6,10 @@ import { useUpdatePreOrder } from '@/hooks/useUpdatePreOrder';
 import { formatLocal } from '@/lib/formatDate';
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
+import { Spinner } from '../ui/spinner';
 
 const EditPreOrderClient = ({data}:{data:PreOrder}) => {
-    console.log(data);
+
     const updateMutation=useUpdatePreOrder();
 
     const handleUpdatePreOrder = (updatedData:PreOrder) => {
@@ -16,6 +17,12 @@ const EditPreOrderClient = ({data}:{data:PreOrder}) => {
     }
     return (
         <main className="flex flex-col px-4 flex-1 items-center pt-24 bg-zinc-50 dark:bg-black">
+            {
+                updateMutation?.isPending  &&
+                <div className="absolute inset-0 z-999 bg-[rgba(0,0,0,0.2)] flex items-center justify-center">
+                    <Spinner className="size-10" color="white" ></Spinner>
+                </div>
+            }
             <section className="max-w-6xl mx-auto w-full">
 
                 <div className="flex items-center justify-between">
@@ -38,11 +45,12 @@ const EditPreOrderClient = ({data}:{data:PreOrder}) => {
 
                         ...data,
                         startsAt:formatLocal(data?.startsAt),
-                        endsAt:data.endsAt && formatLocal(data?.endsAt)
+                        endsAt:data.endsAt && formatLocal(data?.endsAt),
+                        preOrderWhen:data?.preOrderWhen
                     }
                         }
                     onSubmit={handleUpdatePreOrder}
-                    isLoading={false}
+                    isLoading={updateMutation?.isPending}
                 />
             </section>
         </main>

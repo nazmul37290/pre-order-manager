@@ -1,6 +1,7 @@
 "use client"
 import PreorderForm from '@/components/preorder-form';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { useCreatePreOrder } from '@/hooks/useCreatePreOrder';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -21,6 +22,12 @@ const CreatePreOrder = () => {
     }
     return (
         <main className="flex flex-col px-4 flex-1 items-center pt-24 bg-zinc-50  dark:bg-black">
+            {
+                createMutation?.isPending &&
+                <div className="absolute inset-0 z-999 bg-[rgba(0,0,0,0.2)] flex items-center justify-center">
+                    <Spinner className="size-10" color="white" ></Spinner>
+                </div>
+            }
             <section className="max-w-6xl mx-auto w-full">
                 <div className="flex items-center justify-between">
                     {/* <h3 className="text-lg font-bold text-secondary">Preorders</h3> */}

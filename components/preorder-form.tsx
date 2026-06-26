@@ -96,7 +96,7 @@ export default function PreorderForm({isLoading,defaultValues={
                         <LabelComponent labelText="Preorder when" labelDescription="When customers are allowed to preorder"></LabelComponent>
                 
                 <Select
-                    value={defaultValues?.preOrderWhen || "regardless-of-stock"}
+                    defaultValue={defaultValues?.preOrderWhen || "regardless-of-stock"}
                     onValueChange={(val) => setValue("preOrderWhen", val)}
                 >
                             <SelectTrigger className="col-span-2 w-full max-w-120 h-9!">
