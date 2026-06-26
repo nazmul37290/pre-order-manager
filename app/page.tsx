@@ -168,13 +168,13 @@ updateStatusMutation.mutate({status,id})
             </TableHeader>
             <TableBody>
               {
-                isLoading && <TableRow>
+                isLoading ? <TableRow>
                   <TableCell colSpan={8}>
                     <SkeletonTable></SkeletonTable>
                   </TableCell>
                 </TableRow>
-              }
-              {data?.data?.preOrders && data?.data?.preOrders?.length > 0 && !isLoading ?
+              :
+              data?.data?.preOrders && data?.data?.preOrders?.length > 0  ?
                 data?.data?.preOrders.map((order) => {
 
                   return <TableRow key={order?.id}>

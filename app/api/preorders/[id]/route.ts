@@ -18,7 +18,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: numb
         })
     }
     catch (err) {
-        console.log(err);
         return apiError({
             error: err
         })

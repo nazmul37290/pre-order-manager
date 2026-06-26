@@ -41,7 +41,6 @@ export async function createPreOrder(preOrderData:{
     status: 'active' | 'inactive' ;
 }) {
 
-    console.log(JSON.stringify(preOrderData),'data');
     const res = await fetch(`/api/preorders`, {
         method: "POST",
         headers:{
@@ -67,7 +66,6 @@ export async function updatePreOrder(preOrderData: PreOrderBody,id:number){
 
     const data= await res.json();
 
-console.log(data,'updated data');
 
 
     if(!res.ok){

@@ -58,20 +58,7 @@ NEXT_PUBLIC_BASE_URL='http://localhost:3000'
 
 ## ⚙️ Prisma Setup (Important)
 
-### 4. Generate Prisma Client
-
-```bash
-npx prisma generate
-```
-
-This step:
-
-* Generates Prisma Client based on your schema
-* Required after installing dependencies or updating schema
-
----
-
-### 5. Run Migrations
+### 6. Run Migrations
 
 ```bash
 npx prisma migrate dev
@@ -83,7 +70,16 @@ This will:
 * Apply schema
 * Regenerate Prisma Client
 
----
+### 5. Generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+This step:
+
+* Generates Prisma Client based on your schema
+* Required after installing dependencies or updating schema
 
 ### 6. Seed the Database (Optional)
 
